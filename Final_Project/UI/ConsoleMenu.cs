@@ -10,10 +10,13 @@ namespace Final_Project.UI
     public class ConsoleMenu
     {
         private readonly BookManager _manager;
+        private readonly UserManager _userManager;
 
-        public ConsoleMenu(BookManager manager)
+        public ConsoleMenu(BookManager manager, UserManager userManager)
         {
             _manager = manager;
+            _userManager = userManager;
+
             _manager.OnBookAdded = info =>
                 AnsiConsole.MarkupLine($"[green]✔ დაემატა:[/] {Markup.Escape(info)}");
         }
@@ -21,6 +24,7 @@ namespace Final_Project.UI
         public async Task RunAsync()
         {
             bool running = true;
+
             while (running)
             {
                 AnsiConsole.Clear();
@@ -30,19 +34,31 @@ namespace Final_Project.UI
                 string choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]აირჩიე მოქმედება:[/]")
-                        .AddChoices("1. წიგნის დამატება",
-                                    "2. ყველა წიგნის ნახვა",
-                                    "3. წიგნის ძებნა",
-                                    "4. გასვლა"));
+                        .AddChoices(
+                            "1. წიგნის დამატება",
+                            "2. ყველა წიგნის ნახვა",
+                            "3. წიგნის ძებნა",
+                            "4. გასვლა"));
 
                 try
                 {
                     switch (choice[0])
                     {
-                        case '1': await AddBookAsync(); break;
-                        case '2': await ShowAllBooksAsync(); break;
-                        case '3': await SearchBookAsync(); break;
-                        case '4': running = false; break;
+                        case '1':
+                            await AddBookAsync();
+                            break;
+
+                        case '2':
+                            await ShowAllBooksAsync();
+                            break;
+
+                        case '3':
+                            await SearchBookAsync();
+                            break;
+
+                        case '4':
+                            running = false;
+                            break;
                     }
                 }
                 catch (BookNotFoundException ex)
@@ -139,7 +155,8 @@ namespace Final_Project.UI
         private async Task SearchBookAsync()
         {
             string title = AnsiConsole.Prompt(
-                new TextPrompt<string>("შეიყვანე სათაური:").AllowEmpty());
+                new TextPrompt<string>("შეიყვანე სათაური:")
+                    .AllowEmpty());
 
             List<Book> found = new List<Book>();
 
@@ -154,6 +171,7 @@ namespace Final_Project.UI
         private void ShowTable(List<Book> books)
         {
             Table table = new Table().Border(TableBorder.Rounded);
+
             table.AddColumn("#");
             table.AddColumn("ტიპი");
             table.AddColumn("სათაური");
