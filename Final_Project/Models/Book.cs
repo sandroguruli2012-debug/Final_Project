@@ -8,8 +8,13 @@ namespace Final_Project.Models
         public string Title { get; private set; }
         public string Author { get; private set; }
         public int Year { get; private set; }
+        public Genre Genre { get; private set; }
+        public string? BorrowedBy { get; private set; }
+        public DateTime? BorrowedDate { get; private set; }
 
-        protected Book(string title, string author, int year)
+        public bool IsAvailable => BorrowedBy == null;
+
+        protected Book(string title, string author, int year, Genre genre)
         {
             if (!Validator.IsValidText(title))
                 throw new InvalidBookException("სათაური არ შეიძლება იყოს ცარიელი!");
@@ -23,15 +28,37 @@ namespace Final_Project.Models
             Title = title.Trim();
             Author = author.Trim();
             Year = year;
+            Genre = genre;
         }
 
         public abstract string BookType { get; }
 
         public abstract string Details { get; }
 
+        public void Borrow(string username)
+        {
+            if (!IsAvailable)
+                throw new BookAlreadyBorrowedException(Title, BorrowedBy!);
+
+            BorrowedBy = username;
+            BorrowedDate = DateTime.Now;
+        }
+
+        public void Return()
+        {
+            BorrowedBy = null;
+            BorrowedDate = null;
+        }
+
+        public void RestoreBorrow(string username, DateTime date)
+        {
+            BorrowedBy = username;
+            BorrowedDate = date;
+        }
+
         public string GetInfo()
         {
-            return $"{Title} - {Author} ({Year}) [{BookType}: {Details}]";
+            return $"{Title} - {Author} ({Year}) | {this.Genre.ToGeorgian()} | {BookType}";
         }
     }
 }
